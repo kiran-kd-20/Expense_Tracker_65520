@@ -34,18 +34,26 @@ def view_expenses():
     if not expenses:
         print("No expenses recorded.\n")
         return
-    print("\nAll Expenses:")
-    for i, exp in enumerate(expenses, 1):
+    print("\nAll Expenses (sorted by date):")
+    # Sort by date ascending
+    for i, exp in enumerate(sorted(expenses, key=lambda x: x['date']), 1):
         print(f"{i}. {exp['date']} | {exp['category']} | ${exp['amount']:.2f} | {exp['description']}")
-    print()
+    total_amount = sum(exp['amount'] for exp in expenses)
+    print(f"\nTotal expenses recorded: ${total_amount:.2f}\n")
 
 def total_by_category():
     if not expenses:
         print("No expenses recorded.\n")
         return
-    category = input("Enter category to calculate total: ").strip()
-    total = sum(exp['amount'] for exp in expenses if exp['category'].lower() == category.lower())
-    print(f"Total expenses for category '{category}': ${total:.2f}\n")
+    category_input = input("Enter category to calculate total: ").strip().lower()
+    filtered_expenses = [exp for exp in expenses if exp['category'].lower() == category_input]
+    if not filtered_expenses:
+        print(f"No expenses found for category '{category_input}'.\n")
+        return
+    total = sum(exp['amount'] for exp in filtered_expenses)
+    # Use the original category name casing from the first matching expense for display
+    category_display = filtered_expenses[0]['category']
+    print(f"Total expenses for category '{category_display}': ${total:.2f}\n")
 
 def delete_expense():
     if not expenses:
@@ -57,8 +65,13 @@ def delete_expense():
         if idx_str.isdigit():
             idx = int(idx_str)
             if 1 <= idx <= len(expenses):
-                removed = expenses.pop(idx - 1)
-                print(f"Deleted expense: {removed['category']} - ${removed['amount']:.2f} on {removed['date']}\n")
+                removed = expenses[idx - 1]
+                confirm = input(f"Are you sure you want to delete: {removed['category']} - ${removed['amount']:.2f} on {removed['date']}? (y/n): ").strip().lower()
+                if confirm == 'y':
+                    expenses.pop(idx - 1)
+                    print("Expense deleted.\n")
+                else:
+                    print("Deletion cancelled.\n")
                 break
             else:
                 print("Invalid expense number. Try again.")
@@ -89,5 +102,5 @@ def main_menu():
         else:
             print("Invalid choice, please try again.\n")
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     main_menu()
